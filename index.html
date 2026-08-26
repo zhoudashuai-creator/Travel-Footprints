@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>途经 · 我的旅行足迹</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&family=Noto+Serif+SC:wght@600;700;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="styles.css" />
+    <style id="metrics-layout-fix">
+      .metrics {
+        display: grid !important;
+        grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+      }
+      .metrics > div { min-width: 0; }
+      @media (max-width: 640px) {
+        .metrics { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+        .metrics > div:nth-child(3), .metrics > div:nth-child(6) { border-right: 0; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="noise"></div>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="#top" aria-label="途经首页"><span class="brand-mark">T</span><span>途经</span></a>
+        <nav><a class="active" href="#atlas">足迹地图</a><a href="#overview">足迹总览</a></nav>
+        <button class="add-button" id="openAdd"><span>+</span> 添加足迹</button>
+      </header>
+
+      <main id="top">
+        <section class="hero">
+          <div class="hero-copy">
+            <p class="eyebrow">PERSONAL TRAVEL ATLAS · 2026</p>
+            <h1>把路途，<br /><em>收藏成一张地图。</em></h1>
+            <p class="hero-text">记下每一座抵达过的城市、每一个跨越过的国家。地图会记得那些被风吹亮的日子。</p>
+            <div class="hero-actions"><a class="primary-link" href="#atlas">开始探索 <span>↘</span></a><button class="text-button" id="surpriseMe">随机一站 <span>↗</span></button></div>
+          </div>
+          <div class="hero-image">
+            <div class="hero-stamp">NO. <span id="journeyYear">01</span><small>TRAVEL LOG</small></div>
+            <div class="image-credit">KYOTO, JAPAN · 2024</div>
+          </div>
+          <div class="passport-card">
+            <p>THIS YEAR</p><strong id="yearTrips">03</strong><span>次出发</span><div class="route-line"><i></i><i></i><i></i><i></i></div>
+          </div>
+        </section>
+
+        <section class="metrics" aria-label="旅行数据"><div><b id="provinceCount">00</b><span>到访省份</span></div><div><b id="countryCount">00</b><span>到访国家</span></div><div><b id="airDistance">0</b><span>飞行里程（km）</span></div><div><b id="railDistance">0</b><span>铁路里程（km）</span></div><div><b id="shipDistance">0</b><span>轮船里程（km）</span></div><div><b id="carDistance">0</b><span>汽车里程（km）</span></div></section>
+
+        <section class="atlas-section" id="atlas">
+          <div class="section-heading"><div><p class="eyebrow">WHERE I HAVE BEEN</p><h2>足迹地图</h2></div></div>
+          <div class="route-tabs" aria-label="地图图层"><div class="route-tabs-left"><button class="route-tab active" data-layer="footprints">足迹总览</button><button class="route-tab" data-layer="air">航班航迹</button><button class="route-tab" data-layer="rail">铁路图</button><button class="route-tab" data-layer="ship">轮船航迹</button><button class="route-tab" data-layer="car">汽车路线</button></div><div class="route-tabs-right"><div class="map-view-switch" aria-label="地图视图"><button class="map-view-button active" data-map-view="map">2D 地图</button><button class="map-view-button" data-map-view="globe">3D 地球</button></div><button class="export-btn" id="exportAir" title="导出航班航迹 GeoJSON">⇩ 导出航迹</button><button class="export-btn" id="exportRail" title="导出铁路图 GeoJSON">⇩ 导出铁路</button></div></div>
+          <div class="map-panel world-map active-map" id="worldMap"><div class="leaflet-canvas" id="worldLeaflet"></div><div class="globe-canvas" id="globeCanvas" aria-label="3D 旅行地球"></div><div class="map-copy"><p id="worldMapCount">00 <small>COUNTRIES</small></p><span id="worldMapCaption">点击光点，翻开一段旅程</span></div><div class="map-tip" id="worldTip">蓝色边界为曾经抵达过的国家</div></div>
+        </section>
+
+        <section class="overview-section" id="overview"><div class="section-heading"><div><p class="eyebrow">ALL DESTINATIONS</p><h2>足迹总览</h2></div><p class="overview-count" id="overviewCount">00 条足迹</p></div><div class="footprint-list" id="footprintList"></div></section>
+      </main>
+      <footer><a class="brand" href="#top"><span class="brand-mark">T</span><span>途经</span></a><p>Travel slowly, remember deeply.</p><div style="display:flex;align-items:center;gap:12px"><button class="reset-btn" id="resetData" title="清除所有足迹数据">重置数据</button><span>© 2026</span></div></footer>
+    </div>
+
+    <dialog class="add-dialog trip-dialog" id="addDialog"><form id="tripForm"><button type="button" class="dialog-close" id="closeAdd" aria-label="关闭">×</button><p class="eyebrow">NEW TRIP · AUTO-SAVED BY ID</p><h2>记录一次出行</h2><p class="dataset-hint">无需命名。一次出行只需设定一个日期，该出行下的所有目的地共用此日期。</p><label style="display:flex;align-items:center;gap:8px;margin-bottom:20px"><span style="white-space:nowrap;font-size:11px;font-weight:700">出行日期</span><input id="tripDate" type="month" required style="width:auto;flex:1" /></label><div class="trip-form-heading"><div><h3>目的地</h3><p>添加这次出行到访的地点；国外可记录到国家。</p></div><button class="inline-add" type="button" id="addDestinationRow">+ 添加目的地</button></div><div class="entry-row-list" id="destinationRows"></div><div class="trip-form-heading transport-heading"><div><h3>交通段</h3><p>按实际顺序添加。每一段均精确到城市，不需要填写日期。</p></div><button class="inline-add" type="button" id="addTransportRow">+ 添加交通段</button></div><div class="entry-row-list" id="transportRows"></div><button class="save-button" id="saveTrip" type="submit">保存这次出行 <span>↗</span></button></form></dialog>
+    <dialog class="add-dialog edit-dialog" id="editDialog"><form id="editDestinationForm"><button type="button" class="dialog-close" id="closeEdit" aria-label="关闭">×</button><p class="eyebrow">EDIT DESTINATION</p><h2>编辑足迹</h2><p class="dataset-hint" id="editTripLabel"></p><label>地点类型<select id="editType"><option value="china">中国城市</option><option value="world">世界国家</option></select></label><label>目的地<input id="editName" required placeholder="例如：厦门 / Italy" /></label><label>到访日期<input id="editDate" type="month" required /></label><label>一句记忆<textarea id="editNote" rows="3" placeholder="海风、咖啡，或一次难忘的相遇…"></textarea></label><button class="save-button" type="submit">保存修改 <span>↗</span></button></form></dialog>
+    <div class="toast" id="toast"></div>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/globe.gl"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/sql-wasm.js"></script>
+    <script src="app.js?v=7"></script>
+  </body>
+</html>

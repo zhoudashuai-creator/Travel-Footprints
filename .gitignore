@@ -1,0 +1,10 @@
+# Local browser profile and generated verification artifacts
+.browser-test/
+.claude/
+preview*.png
+.province-check.json
+
+# Operating-system and editor files
+.DS_Store
+Thumbs.db
+.vscode/
